@@ -96,7 +96,15 @@ class TemplateBackend:
 
         return response
 
-    def send(self, template_name, from_email, recipient_list, context, cc=[], bcc=[], fail_silently=False, headers={}):
+    def attach_files(email, files):
+        for f in files:
+            if 'filename' in f:
+                if 'type' in f:
+                    email.attach_file(f.get('filename'), f.get('type'))
+                else:
+                    email.attach_file(f.get('filename'))
+
+    def send(self, template_name, from_email, recipient_list, context, cc=[], bcc=[], fail_silently=False, headers={}, files=[]):
         parts = self._render_email(template_name, context)
         plain_part = parts.has_key('plain')
         html_part = parts.has_key('html')
@@ -120,6 +128,7 @@ class TemplateBackend:
                 bcc = bcc,
                 headers = headers,
             )
+            self.attach_files(e,files)
             e.send(fail_silently)
 
         if html_part and not plain_part:
@@ -133,6 +142,7 @@ class TemplateBackend:
                 headers = headers,
             )
             e.content_subtype = 'html'
+            self.attach_files(e,files)
             e.send(fail_silently)
 
         if plain_part and html_part:
@@ -146,6 +156,7 @@ class TemplateBackend:
                 headers = headers,
             )
             e.attach_alternative(parts['html'],'text/html')
+            self.attach_files(e,files)
             e.send(fail_silently)
         
         return e.extra_headers.get('Message-Id',None)
