@@ -96,7 +96,7 @@ class TemplateBackend:
 
         return response
 
-    def attach_files(email, files):
+    def attach_files(self, email, files):
         for f in files:
             if 'filename' in f:
                 if 'type' in f:
